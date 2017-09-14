@@ -42,6 +42,7 @@ module OmniAuth
       option :send_nonce, true
       option :send_scope_to_token_endpoint, true
       option :client_auth_method
+      option :skip_jwt, false
 
       uid { user_info.sub }
 
@@ -157,12 +158,14 @@ module OmniAuth
             scope: (options.scope if options.send_scope_to_token_endpoint),
             client_auth_method: options.client_auth_method
           )
-          _id_token = decode_id_token _access_token.id_token
-          _id_token.verify!(
-            issuer: options.issuer,
-            client_id: client_options.identifier,
-            nonce: stored_nonce
-          )
+          unless options.skip_jwt
+            _id_token = decode_id_token _access_token.id_token
+            _id_token.verify!(
+              issuer: options.issuer,
+              client_id: client_options.identifier,
+              nonce: stored_nonce
+            )
+          end
           _access_token
         end
       end
